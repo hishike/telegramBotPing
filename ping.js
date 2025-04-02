@@ -22,6 +22,32 @@ async function currentTime() {
   return `${hours}:${minutes}:${seconds}`;
 }
 
+async function getImgurImages() {
+  try {
+    const response = await axios.get('https://api.imgur.com/3/gallery/t/hatsune_miku', {
+      headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` }
+    })
+    const imageLinks = response.data.data.items
+      .filter(item => !item.is_album)
+      .map(item => `https://i.imgur.com/${item.id}`);
+    if (imageLinks.length > 0) {
+      const randomImage = imageLinks[Math.floor(Math.random() * imageLinks.length)];
+      return randomImage;
+    } else {
+      return "Nenhuma imagem encontrada.";
+    }
+  } catch (error) {
+    return "Não consegui buscar as imagens no momento.";
+  }
+
+}
+
+bot.hears("miku", async (ctx) => {
+  const imageUrl = await getImgurImages();
+  console.log('URL da imagem:', imageUrl);
+  ctx.reply(imageUrl);
+});
+
 async function morning() {
   try {
     const response = await axios.get('https://nekos.best/api/v2/yawn');
@@ -41,6 +67,6 @@ setInterval(async () => {
   } else {
     console.log("Ainda não é hora de dar bom dia");
   }
-}, 1000);;
+}, 1000);
 
 bot.launch();
